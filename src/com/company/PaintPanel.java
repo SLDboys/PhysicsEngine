@@ -33,12 +33,21 @@ public class PaintPanel extends JPanel implements ActionListener{
         for(int i=1; i < model.getHeight()-1; i++) {
             for(int j=1; j < model.getWidth() -1; j++) {
                 if(model.getCell(j, i) > 0 ){
-                    if(model.getCell(j, i) == 1) g.setColor(Color.BLACK);
+                    if(model.getCell(j, i) == 1) g.setColor(new Color(212, 155, 0));
                     else {
                         float mass = model.getMass(j, i);
-                        if(mass < 1.1f) g.setColor(new Color(0, 96, 255));
-                        else if(mass <= 2f) g.setColor(new Color(0, 49, 129));
-                        else g.setColor(new Color(0, 25, 80));
+                        //l   d
+                        //150 23 r
+                        //185 45 b
+                        //255 95 g
+                        //0.1 1
+                        //145-23=122
+                        //180-45=135
+                        //250-95=155
+                        //50  0
+                       if(mass <= 1) g.setColor(new Color((int)(5*(1-mass)) + 142, (int)(5*(1-mass)) + 173 ,(int)(5*(1-mass)) + 247));
+                       else if (mass <= 60) g.setColor(new Color((int)(122*(1-(mass/60)))+ 20,(int)(135*(1-(mass/60)))+ 42,(int)(155*(1-(mass/60)))+ 92));
+                       else g.setColor(new Color(23,45,95));
                     }
                     g.fillRect(cellSize*(i), cellSize*(j), cellSize, cellSize);
                 }
@@ -88,6 +97,7 @@ public class PaintPanel extends JPanel implements ActionListener{
     public void updateMousePos(int mouseX, int mouseY) {
         this.mouseX = mouseX;
         this.mouseY = mouseY;
+//        System.out.println(model.mass[mouseY/cellSize][mouseX/cellSize]);
         repaint();
     }
 

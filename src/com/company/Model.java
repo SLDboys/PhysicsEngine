@@ -12,9 +12,8 @@ public class Model {
             minMass = 0.0001f,//Ignore cells that are almost dry
             minFlow = 0.005f,
             maxSpeed = 4f, flowMult = 1f;
-    DecimalFormat df = new DecimalFormat("#.####");
-    private final int height = 50,
-            width = 50;
+    private final int height = 250,
+            width = 200;
     private long maxTime = 0;
     /* height & width are +2 of what's shown, because of border cells
      * EXAMPLE: 0 -- not shown on screen, 1 -- shown on screen
@@ -122,7 +121,6 @@ public class Model {
 
     void updateModel() {
 
-        long t0 = System.nanoTime();
 
         float Flow = 0;
         float remaining_mass;
@@ -203,14 +201,6 @@ public class Model {
             }
         }
 
-        for (int y = 1; y < width - 1; y++) {
-            for (int x = 1; x < height - 1; x++) {
-                System.out.print(df.format(newMass[y][x] - mass[y][x]) + " ");
-            }
-            System.out.print("\n");
-        }
-        System.out.print("\n---------------------\n");
-
         //Copy the new mass values to the mass array
         for (int y = 0; y < width; y++) {
             System.arraycopy(newMass[y], 0, mass[y], 0, height);
@@ -238,20 +228,6 @@ public class Model {
             mass[0][x] = 0;
             mass[width - 1][x] = 0;
         }
-
-        //FIX THAT -- THERE IS SOME WAY TO GET NEGATIVE MASS, DUNNO HOW, THIS IS THE TEMPORARY FIX
-        for (int y = 1; y < width - 1; y++) {
-            for (int x = 1; x < height - 1; x++) {
-                if(mass[y][x] < 0) mass[y][x] = 0;
-            }
-        }
-        long time = System.nanoTime()- t0;
-        if( time > maxTime) {
-            System.out.println(System.nanoTime() - t0);
-            maxTime = time;
-        }
-
-
     }
 
     float getStableState(float total_mass) {
