@@ -16,6 +16,7 @@ public class PaintPanel extends JPanel implements ActionListener{
                     {0,1,1,1,1,1,0},
                     {0,0,0,0,0,0,0}
             };
+    long maxTimeCalc = 0, maxTimeDraw = 0;
     Model model = new Model();
     Timer tm = new Timer(500, this);
     private int cellSize,

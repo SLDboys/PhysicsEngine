@@ -20,6 +20,14 @@ public class Frame extends JFrame {
 
     private JButton pauseButton;
     private JButton startButton;
+
+    private JTextField maxMass,
+                        maxCompress,
+            minMass,
+            minFlow,
+            maxSpeed;
+    private JButton setButton;
+
     private JToolBar toolBar;
     private JSlider speedSlider;
     private JSlider brushSizeSlider;
@@ -58,6 +66,13 @@ public class Frame extends JFrame {
         brushSizeSlider.setPaintLabels(true);
         brushSizeSlider.setPreferredSize(new Dimension(100, 45));
 
+        maxMass = new JTextField("1");
+        maxCompress = new JTextField("0.25");
+        minMass = new JTextField("0.0001");
+        minFlow = new JTextField("0.005");
+        maxSpeed = new JTextField("4");
+        setButton = new JButton("set val");
+
         toolBar = new JToolBar("ToolBar");
         toolBar.add(pauseButton);
         toolBar.add(startButton);
@@ -65,6 +80,14 @@ public class Frame extends JFrame {
         toolBar.add(new JSeparator(SwingConstants.VERTICAL));
         toolBar.add(brushSizeSlider);
         toolBar.add(new JSeparator(SwingConstants.VERTICAL));
+
+        toolBar.add(maxMass);
+        toolBar.add(maxCompress);
+        toolBar.add(minMass);
+        toolBar.add(minFlow);
+        toolBar.add(maxSpeed);
+        toolBar.add(setButton);
+
         toolBar.setFloatable(false);
         getContentPane().add(toolBar, BorderLayout.NORTH);
 
@@ -74,6 +97,18 @@ public class Frame extends JFrame {
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1050, 900);
+
+        setButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                panel.model.setMaxMass(Float.parseFloat(maxMass.getText()));
+                panel.model.setMaxCompress(Float.parseFloat(maxCompress.getText()));
+                panel.model.setMinMass(Float.parseFloat(minMass.getText()));
+                panel.model.setMinFlow(Float.parseFloat(minFlow.getText()));
+                panel.model.setMaxSpeed(Float.parseFloat(maxSpeed.getText()));
+            }
+        });
+
 
         speedSlider.addChangeListener(new ChangeListener() {
             @Override
