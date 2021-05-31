@@ -7,6 +7,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Hashtable;
 
+import static java.lang.Float.parseFloat;
+
 enum Mode{
     GROUND,
     WATER
@@ -116,7 +118,7 @@ public class Frame extends JFrame {
                 String input = JOptionPane.showInputDialog("Set Standard Mass");
                 float newVal = 0;
                 try {
-                    newVal = Float.parseFloat(input);
+                    newVal = parseFloat(input);
                     panel.model.setMaxMass(newVal);
                 }
                 catch(NumberFormatException err) {
@@ -133,7 +135,7 @@ public class Frame extends JFrame {
                 String input = JOptionPane.showInputDialog("Set Compress Rate");
                 float newVal = 0;
                 try {
-                    newVal = Float.parseFloat(input);
+                    newVal = parseFloat(input);
                     panel.model.setMaxCompress(newVal);
                 }
                 catch(NumberFormatException err) {
@@ -150,7 +152,7 @@ public class Frame extends JFrame {
                 String input = JOptionPane.showInputDialog("Set Min Showable Mass");
                 float newVal = 0;
                 try {
-                    newVal = Float.parseFloat(input);
+                    newVal = parseFloat(input);
                     panel.model.setMinMass(newVal);
                 }
                 catch(NumberFormatException err) {
@@ -167,7 +169,7 @@ public class Frame extends JFrame {
                 String input = JOptionPane.showInputDialog("Set Min Flow");
                 float newVal = 0;
                 try {
-                    newVal = Float.parseFloat(input);
+                    newVal = parseFloat(input);
                     panel.model.setMinFlow(newVal);
                 }
                 catch(NumberFormatException err) {
@@ -184,7 +186,7 @@ public class Frame extends JFrame {
                 String input = JOptionPane.showInputDialog("Set Max Speed");
                 float newVal = 0;
                 try {
-                    newVal = Float.parseFloat(input);
+                    newVal = parseFloat(input);
                     panel.model.setMaxSpeed(newVal);
                 }
                 catch(NumberFormatException err) {
@@ -201,7 +203,7 @@ public class Frame extends JFrame {
                 String input = JOptionPane.showInputDialog("Set flow smoothness");
                 float newVal = 0;
                 try {
-                    newVal = Float.parseFloat(input);
+                    newVal = parseFloat(input);
                     panel.model.setFlowMult(newVal);
                 }
                 catch(NumberFormatException err) {
@@ -224,7 +226,13 @@ public class Frame extends JFrame {
                         "To change size of the brush drag the right slider\n" +
                         "To stop/start simulation press top-left button\n" +
                         "To change constant press appropriate menu item\n"+
-                        "Constants: \n"+//Write constants
+                        "Constants: \n"+
+                        "Standard Mass - The mass of water in a single cell when it is created\n"+
+                        "Compress Rate - Maximum difference in water mass between the upper and lower cells\n"+
+                        "Min Showable Mass - Minimum mass of water that can be contained in the cell\n"+
+                        "Min Flow - Threshold of the flow for which additional multiplication is applied\n"+
+                        "Max Speed - Maximum water flow rate\n"+
+                        "Smoothness of sim - Changing the smoothness of the water animation\n"+
                         "Authors: Vadim Parmuzin, Ilia Mushkin, Dmitri Levitsky"
                 );
             }
