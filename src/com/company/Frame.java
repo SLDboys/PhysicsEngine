@@ -7,30 +7,28 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Hashtable;
 
-//import java.awt.event.MouseListener;
-/*TODO
-* [x]Выставление начальных условий по мышке
-* [x]Выбор скорости апдейта
-* []Выбор размера поля
-* []Пошаговые действия
-* []Заменить на другую тему
-*
-* */
+enum Mode{
+    GROUND,
+    WATER
+}
+
+enum StartPause{
+    PAUSE,
+    START
+}
+
 public class Frame extends JFrame {
-
-    private JButton pauseButton;
-    private JButton startButton;
-
-    private JTextField maxMass,
-                        maxCompress,
-            minMass,
-            minFlow,
-            maxSpeed;
-    private JButton setButton;
-
+    private JButton startPauseButton, modeButton;
+    private JMenuBar menu;
+    private JMenu fileMenu;
+    private JMenuItem maxMassMenu, maxCompressMenu, minMassMenu, minFlowMenu, maxSpeedMenu, flowMultMenu, helpMenu;
+    private JButton clearScreenButton;
+    private Mode mode = Mode.WATER;
+    private StartPause startPause = StartPause.PAUSE;
     private JToolBar toolBar;
     private JSlider speedSlider;
     private JSlider brushSizeSlider;
+    private ImageIcon pause, start;
     private boolean LMDragged = false;
     private boolean RMDragged = false;
     int cellSize;
@@ -38,12 +36,12 @@ public class Frame extends JFrame {
         super("Game of life");
         setLayout(new BorderLayout());
         cellSize = 4;
-
-        pauseButton = new JButton(new ImageIcon("./img/pause.png"));
-        startButton = new JButton(new ImageIcon("./img/start.png"));
-
-        pauseButton.setBorderPainted(false);
-        startButton.setBorderPainted(false);
+        start = new ImageIcon("./img/start.png");
+        pause = new ImageIcon("./img/pause.png");
+        startPauseButton = new JButton(start);
+        clearScreenButton = new JButton("Clear Screen");
+        modeButton = new JButton("Change mode to GROUND");
+        startPauseButton.setBorderPainted(false);
 
         speedSlider = new JSlider(1, 1000);
         speedSlider.setOrientation(JSlider.HORIZONTAL);
@@ -54,6 +52,7 @@ public class Frame extends JFrame {
         speedLabels.put(1000, new JLabel("Slow"));
         speedSlider.setLabelTable(speedLabels);
         speedSlider.setPaintLabels(true);
+        speedSlider.setValue(1);
         speedSlider.setPreferredSize(new Dimension(100, 45));
 
         brushSizeSlider = new JSlider(cellSize, cellSize*10);
@@ -64,29 +63,40 @@ public class Frame extends JFrame {
         brushSizeLabels.put(cellSize*10, new JLabel(cellSize*10 + " pix"));
         brushSizeSlider.setLabelTable(brushSizeLabels);
         brushSizeSlider.setPaintLabels(true);
+        brushSizeSlider.setValue(cellSize);
         brushSizeSlider.setPreferredSize(new Dimension(100, 45));
 
-        maxMass = new JTextField("1");
-        maxCompress = new JTextField("0.25");
-        minMass = new JTextField("0.0001");
-        minFlow = new JTextField("0.005");
-        maxSpeed = new JTextField("4");
-        setButton = new JButton("set val");
+        menu = new JMenuBar();
+        fileMenu = new JMenu("Advanced");
+        maxMassMenu = new JMenuItem("Set Standard Mass");
+        maxCompressMenu = new JMenuItem("Set Compress Rate");
+        minMassMenu = new JMenuItem("Set Min Showable Mass");
+        minFlowMenu = new JMenuItem("Change Min Flow");
+        maxSpeedMenu = new JMenuItem("Change Max Speed");
+        flowMultMenu = new JMenuItem("Change Smoothness of sim");
+        helpMenu = new JMenuItem("Help");
+
+        fileMenu.add(maxMassMenu);
+        fileMenu.add(maxCompressMenu);
+        fileMenu.add(minMassMenu);
+        fileMenu.add(minFlowMenu);
+        fileMenu.add(maxSpeedMenu);
+        fileMenu.add(flowMultMenu);
+        fileMenu.addSeparator();
+        fileMenu.add(helpMenu);
+        menu.add(fileMenu);
+        menu.add(Box.createHorizontalGlue());
+        setJMenuBar(menu);
 
         toolBar = new JToolBar("ToolBar");
-        toolBar.add(pauseButton);
-        toolBar.add(startButton);
+        toolBar.add(startPauseButton);
         toolBar.add(speedSlider);
         toolBar.add(new JSeparator(SwingConstants.VERTICAL));
         toolBar.add(brushSizeSlider);
         toolBar.add(new JSeparator(SwingConstants.VERTICAL));
-
-        toolBar.add(maxMass);
-        toolBar.add(maxCompress);
-        toolBar.add(minMass);
-        toolBar.add(minFlow);
-        toolBar.add(maxSpeed);
-        toolBar.add(setButton);
+        toolBar.add(clearScreenButton);
+        toolBar.add(modeButton);
+        setJMenuBar(menu);
 
         toolBar.setFloatable(false);
         getContentPane().add(toolBar, BorderLayout.NORTH);
@@ -97,18 +107,149 @@ public class Frame extends JFrame {
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1050, 900);
+        setResizable(false);
 
-        setButton.addActionListener(new ActionListener() {
+
+        maxMassMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                panel.model.setMaxMass(Float.parseFloat(maxMass.getText()));
-                panel.model.setMaxCompress(Float.parseFloat(maxCompress.getText()));
-                panel.model.setMinMass(Float.parseFloat(minMass.getText()));
-                panel.model.setMinFlow(Float.parseFloat(minFlow.getText()));
-                panel.model.setMaxSpeed(Float.parseFloat(maxSpeed.getText()));
+                String input = JOptionPane.showInputDialog("Set Standard Mass");
+                float newVal = 0;
+                try {
+                    newVal = Float.parseFloat(input);
+                    panel.model.setMaxMass(newVal);
+                }
+                catch(NumberFormatException err) {
+                }
+                catch(IllegalArgumentException err) {
+                    JOptionPane.showMessageDialog(null, "Illegal argument:" + err.getMessage());
+                }
             }
         });
 
+        maxCompressMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = JOptionPane.showInputDialog("Set Compress Rate");
+                float newVal = 0;
+                try {
+                    newVal = Float.parseFloat(input);
+                    panel.model.setMaxCompress(newVal);
+                }
+                catch(NumberFormatException err) {
+                }
+                catch(IllegalArgumentException err) {
+                    JOptionPane.showMessageDialog(null, "Illegal argument:" + err.getMessage());
+                }
+            }
+        });
+
+        minMassMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = JOptionPane.showInputDialog("Set Min Showable Mass");
+                float newVal = 0;
+                try {
+                    newVal = Float.parseFloat(input);
+                    panel.model.setMinMass(newVal);
+                }
+                catch(NumberFormatException err) {
+                }
+                catch(IllegalArgumentException err) {
+                    JOptionPane.showMessageDialog(null, "Illegal argument:" + err.getMessage());
+                }
+            }
+        });
+
+        minFlowMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = JOptionPane.showInputDialog("Set Min Flow");
+                float newVal = 0;
+                try {
+                    newVal = Float.parseFloat(input);
+                    panel.model.setMinFlow(newVal);
+                }
+                catch(NumberFormatException err) {
+                }
+                catch(IllegalArgumentException err) {
+                    JOptionPane.showMessageDialog(null, "Illegal argument:" + err.getMessage());
+                }
+            }
+        });
+
+        maxSpeedMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = JOptionPane.showInputDialog("Set Max Speed");
+                float newVal = 0;
+                try {
+                    newVal = Float.parseFloat(input);
+                    panel.model.setMaxSpeed(newVal);
+                }
+                catch(NumberFormatException err) {
+                }
+                catch(IllegalArgumentException err) {
+                    JOptionPane.showMessageDialog(null, "Illegal argument:" + err.getMessage());
+                }
+            }
+        });
+
+        flowMultMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = JOptionPane.showInputDialog("Set flow smoothness");
+                float newVal = 0;
+                try {
+                    newVal = Float.parseFloat(input);
+                    panel.model.setFlowMult(newVal);
+                }
+                catch(NumberFormatException err) {
+                }
+                catch(IllegalArgumentException err) {
+                    JOptionPane.showMessageDialog(null, "Illegal argument:" + err.getMessage());
+                }
+            }
+        });
+
+        helpMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null, "\tThis program simulates water flow\n" +
+                        "In \"WATER\" mode press/drag LMB to spawn water\n" +
+                        "In \"GROUND\" mode press/drag LMB to spawn ground\n"+
+                        "To change mod, press button on the top-right side\n" +
+                        "To erase blocks press/drag RMB\n" +
+                        "To change speed of the simulation drag the left slider\n"+
+                        "To change size of the brush drag the right slider\n" +
+                        "To stop/start simulation press top-left button\n" +
+                        "To change constant press appropriate menu item\n"+
+                        "Constants: \n"+//Write constants
+                        "Authors: Vadim Parmuzin, Ilia Mushkin, Dmitri Levitsky"
+                );
+            }
+        });
+
+        modeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(mode == Mode.WATER) {
+                    mode = Mode.GROUND;
+                    modeButton.setText("Change mode to WATER");
+                }
+                else {
+                    mode = Mode.WATER;
+                    modeButton.setText("Change mode to GROUND");
+                }
+            }
+        });
+
+        clearScreenButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                panel.model = new Model();
+            }
+        });
 
         speedSlider.addChangeListener(new ChangeListener() {
             @Override
@@ -124,17 +265,19 @@ public class Frame extends JFrame {
             }
         });
 
-        pauseButton.addActionListener(new ActionListener() {
+        startPauseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                panel.pause();
-            }
-        });
-
-        startButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                panel.start();
+                if(startPause == StartPause.PAUSE) {
+                    startPause = StartPause.START;
+                    startPauseButton.setIcon(pause);
+                    panel.start();
+                }
+                else {
+                    startPause = StartPause.PAUSE;
+                    startPauseButton.setIcon(start);
+                    panel.pause();
+                }
             }
         });
 
@@ -145,7 +288,7 @@ public class Frame extends JFrame {
                     int brushSize = panel.getBrushSize()/2;
                     for (int i = (e.getY()-brushSize)/cellSize; i < (e.getY()+brushSize)/cellSize; i++) {
                         for (int j = (e.getX()-brushSize)/cellSize; j < (e.getX()+brushSize)/cellSize; j++) {
-                            panel.setCell(2, i, j);
+                            panel.setCell(1+mode.ordinal(), i, j);
                         }
                     }
                     panel.repaint();
@@ -155,7 +298,7 @@ public class Frame extends JFrame {
                     int brushSize = panel.getBrushSize()/2;
                     for (int i = (e.getY()-brushSize)/cellSize; i < (e.getY()+brushSize)/cellSize; i++) {
                         for (int j = (e.getX()-brushSize)/cellSize; j < (e.getX()+brushSize)/cellSize; j++) {
-                            panel.setCell(1, i, j);
+                            panel.setCell(0, i, j);
                         }
                     }
                     panel.repaint();
@@ -185,7 +328,7 @@ public class Frame extends JFrame {
                     int brushSize = panel.getBrushSize()/2;
                     for (int i = (e.getY()-brushSize)/cellSize; i < (e.getY()+brushSize)/cellSize; i++) {
                         for (int j = (e.getX()-brushSize)/cellSize; j < (e.getX()+brushSize)/cellSize; j++) {
-                            panel.setCell(2, i, j);
+                            panel.setCell(1+mode.ordinal(), i, j);
                         }
                     }
 
@@ -194,7 +337,7 @@ public class Frame extends JFrame {
                     int brushSize = panel.getBrushSize()/2;
                     for (int i = (e.getY()-brushSize)/cellSize; i < (e.getY()+brushSize)/cellSize; i++) {
                         for (int j = (e.getX()-brushSize)/cellSize; j < (e.getX()+brushSize)/cellSize; j++) {
-                            panel.setCell(1, i, j);
+                            panel.setCell(0, i, j);
                         }
                     }
                 }

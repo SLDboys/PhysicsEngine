@@ -6,19 +6,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class PaintPanel extends JPanel implements ActionListener{
-    int[][] table =
-            {
-                    {0,0,0,0,0,0,0},
-                    {0,1,2,1,0,1,0},
-                    {0,1,2,1,0,1,0},
-                    {0,1,2,1,0,1,0},
-                    {0,1,2,2,2,1,0},
-                    {0,1,1,1,1,1,0},
-                    {0,0,0,0,0,0,0}
-            };
-    long maxTimeCalc = 0, maxTimeDraw = 0;
+//    int[][] table =
+//            {
+//                    {0,0,0,0,0,0,0},
+//                    {0,1,2,1,0,1,0},
+//                    {0,1,2,1,0,1,0},
+//                    {0,1,2,1,0,1,0},
+//                    {0,1,2,2,2,1,0},
+//                    {0,1,1,1,1,1,0},
+//                    {0,0,0,0,0,0,0}
+//            };
+//    long maxTimeCalc = 0, maxTimeDraw = 0;
     Model model = new Model();
-    Timer tm = new Timer(500, this);
+    Timer tm = new Timer(1, this);
     private int cellSize,
     mouseX, mouseY, brushSize;
     PaintPanel(int cellSize) {
@@ -88,16 +88,23 @@ public class PaintPanel extends JPanel implements ActionListener{
         try {
             model.setCell(val, i, j);
             if(val == 2) model.setMass(model.maxMass, i, j);
+            else if(val==0) model.setMass(0, i, j);
         }
         catch (IndexOutOfBoundsException err) {
-//            System.out.println(err.getMessage());
+        }
+    }
+
+    public void setMass(float val, int i, int j) {
+        try {
+            model.setMass(val, i, j);
+        }
+        catch (IndexOutOfBoundsException err) {
         }
     }
 
     public void updateMousePos(int mouseX, int mouseY) {
         this.mouseX = mouseX;
         this.mouseY = mouseY;
-//        System.out.println(model.mass[mouseY/cellSize][mouseX/cellSize]);
         repaint();
     }
 

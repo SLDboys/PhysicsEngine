@@ -1,5 +1,5 @@
 package com.company;
-import java.text.DecimalFormat;
+import java.util.Random;
 
 import static java.lang.Math.min;
 
@@ -7,14 +7,15 @@ public class Model {
     final int AIR = 0,
             GROUND = 1,
             WATER = 2;
-     float maxMass = 1f,//The normal, un-pressurized mass of a full water cell
+    float maxMass = 1f,//The normal, un-pressurized mass of a full water cell
             maxCompress = 0.25f,//How much excess water a cell can store, compared to the cell above it
             minMass = 0.0001f,//Ignore cells that are almost dry
             minFlow = 0.005f,
-            maxSpeed = 4f, flowMult = 1f;
+            maxSpeed = 4f,
+            flowMult = 1f;//0-1f -- broadly speaking this is smoothness of simulation (1f being max speed)
     private final int height = 250,
             width = 200;
-    private long maxTime = 0;
+    Random random = new Random();
     /* height & width are +2 of what's shown, because of border cells
      * EXAMPLE: 0 -- not shown on screen, 1 -- shown on screen
      * 00000
@@ -42,26 +43,56 @@ public class Model {
                 newMass[i][j] = 0;
             }
         }
+//        MAKING "HARD" BORDER
+//        for (int j = 0; j < height; j++) {
+//            table[width-1][j] = GROUND;
+//        }
+//        for (int i = 0; i < width; i++) {
+//            table[i][height-1] = GROUND;
+//            table[i][0] = GROUND;
+//        }
     }
 
-    public void setMaxMass(float maxMass) {
+    public void setMaxMass(float maxMass) throws IllegalArgumentException {
+        if(maxMass <= 0) {
+            throw new IllegalArgumentException("Mass can't be <0");
+        }
         this.maxMass = maxMass;
     }
 
     public void setMaxCompress(float maxCompress) {
+        if(maxCompress <= 0) {
+            throw new IllegalArgumentException("Compress can't be <0");
+        }
         this.maxCompress = maxCompress;
     }
 
     public void setMinMass(float minMass) {
+        if(minMass <= 0) {
+            throw new IllegalArgumentException("Minimal mass can't be <0");
+        }
         this.minMass = minMass;
     }
 
     public void setMinFlow(float minFlow) {
+        if(minFlow <= 0) {
+            throw new IllegalArgumentException("Minimal flow can't be <0");
+        }
         this.minFlow = minFlow;
     }
 
     public void setMaxSpeed(float maxSpeed) {
+        if(maxSpeed <= 0) {
+            throw new IllegalArgumentException("Max speed can't be <0");
+        }
         this.maxSpeed = maxSpeed;
+    }
+
+    public void setFlowMult(float flowMult) {
+        if(flowMult <= 0) {
+            throw new IllegalArgumentException("Flow smoothness speed can't be <0");
+        }
+        this.flowMult = flowMult;
     }
 
     Model(int[][] table) {
@@ -151,38 +182,68 @@ public class Model {
                     newMass[y + 1][x] += Flow;
                     remaining_mass -= Flow;
                 }
-
                 if (remaining_mass <= 0) continue;
-
-                //Left
-                if (table[y][x - 1] != GROUND) {
-                    //Equalize the amount of water in this block and it's neighbour
-                    Flow = (mass[y][x] - mass[y][x - 1]) / 4;
-                    if (Flow > minFlow) {
-                        Flow *= flowMult;
+                if(random.nextBoolean()) {
+                    //Left
+                    if (table[y][x - 1] != GROUND) {
+                        //Equalize the amount of water in this block and it's neighbour
+                        Flow = (mass[y][x] - mass[y][x - 1]) / 4f;
+                        if (Flow > minFlow) {
+                            Flow *= flowMult;
+                        }
+                        if (Flow < 0) Flow = 0;
+                        else if (Flow > remaining_mass) Flow = remaining_mass;
+                        newMass[y][x] -= Flow;
+                        newMass[y][x - 1] += Flow;
+                        remaining_mass -= Flow;
                     }
-                    if (Flow < 0) Flow = 0;
-                    else if (Flow > remaining_mass) Flow = remaining_mass;
-                    newMass[y][x] -= Flow;
-                    newMass[y][x - 1] += Flow;
-                    remaining_mass -= Flow;
+
+                    if (remaining_mass <= 0) continue;
+
+                    //Right
+                    if (table[y][x + 1] != GROUND) {
+                        //Equalize the amount of water in this block and it's neighbour
+                        Flow = (mass[y][x] - mass[y][x + 1]) / 4f;
+                        if (Flow > minFlow) {
+                            Flow *= flowMult;
+                        }
+                        if (Flow < 0) Flow = 0;
+                        else if (Flow > remaining_mass) Flow = remaining_mass;
+                        newMass[y][x] -= Flow;
+                        newMass[y][x + 1] += Flow;
+                        remaining_mass -= Flow;
+                    }
+                }
+                else {
+                    //Right
+                    if (table[y][x + 1] != GROUND) {
+                        //Equalize the amount of water in this block and it's neighbour
+                        Flow = (mass[y][x] - mass[y][x + 1]) / 4f;
+                        if (Flow > minFlow) {
+                            Flow *= flowMult;
+                        }
+                        if (Flow < 0) Flow = 0;
+                        else if (Flow > remaining_mass) Flow = remaining_mass;
+                        newMass[y][x] -= Flow;
+                        newMass[y][x + 1] += Flow;
+                        remaining_mass -= Flow;
+                    }
+                    if (remaining_mass <= 0) continue;
+                    //Left
+                    if (table[y][x - 1] != GROUND) {
+                        //Equalize the amount of water in this block and it's neighbour
+                        Flow = (mass[y][x] - mass[y][x - 1]) / 4f;
+                        if (Flow > minFlow) {
+                            Flow *= flowMult;
+                        }
+                        if (Flow < 0) Flow = 0;
+                        else if (Flow > remaining_mass) Flow = remaining_mass;
+                        newMass[y][x] -= Flow;
+                        newMass[y][x - 1] += Flow;
+                        remaining_mass -= Flow;
+                    }
                 }
 
-                if (remaining_mass <= 0) continue;
-
-                //Right
-                if (table[y][x + 1] != GROUND) {
-                    //Equalize the amount of water in this block and it's neighbour
-                    Flow = (mass[y][x] - mass[y][x + 1]) / 4;
-                    if (Flow > minFlow) {
-                        Flow *= flowMult;
-                    }
-                    if (Flow < 0) Flow = 0;
-                    else if (Flow > remaining_mass) Flow = remaining_mass;
-                    newMass[y][x] -= Flow;
-                    newMass[y][x + 1] += Flow;
-                    remaining_mass -= Flow;
-                }
 
                 if (remaining_mass <= 0) continue;
 
@@ -232,11 +293,11 @@ public class Model {
 
     float getStableState(float total_mass) {
         if (total_mass <= 1) {
-            return 1;
+            return maxMass;
         } else if (total_mass < 2 * maxMass + maxCompress) {
             return (maxMass * maxMass + total_mass * maxCompress) / (maxMass + maxCompress);
         } else {
-            return (total_mass + maxCompress) / 2;
+            return (total_mass + maxCompress) / 2f;
         }
     }
 
