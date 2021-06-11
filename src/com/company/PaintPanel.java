@@ -87,19 +87,16 @@ public class PaintPanel extends JPanel implements ActionListener{
     public void setCell(int val, int i, int j) {
         try {
             model.setCell(val, i, j);
-            if(val == 2) model.setMass(model.maxMass, i, j);
+            if(val == 2) model.setMass(model.maxMass + model.getMass(i, j), i, j);
             else if(val==0) model.setMass(0, i, j);
         }
         catch (IndexOutOfBoundsException err) {
         }
     }
 
-    public void setMass(float val, int i, int j) {
-        try {
-            model.setMass(val, i, j);
-        }
-        catch (IndexOutOfBoundsException err) {
-        }
+    public void clearModel() {
+        model.clearTable();
+        repaint();
     }
 
     public void updateMousePos(int mouseX, int mouseY) {

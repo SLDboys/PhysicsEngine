@@ -9,23 +9,18 @@ import java.util.Hashtable;
 
 import static java.lang.Float.parseFloat;
 
-enum Mode{
-    GROUND,
-    WATER
-}
 
 enum StartPause{
     PAUSE,
     START
 }
 
-public class Frame extends JFrame {
-    private JButton startPauseButton, modeButton;
+public class Frame extends JFrame{
+    private JButton startPauseButton;
     private JMenuBar menu;
     private JMenu fileMenu;
     private JMenuItem maxMassMenu, maxCompressMenu, minMassMenu, minFlowMenu, maxSpeedMenu, flowMultMenu, helpMenu;
-    private JButton clearScreenButton;
-    private Mode mode = Mode.WATER;
+    private JButton clearScreenButton, returnToStandConstButton;
     private StartPause startPause = StartPause.PAUSE;
     private JToolBar toolBar;
     private JSlider speedSlider;
@@ -35,14 +30,14 @@ public class Frame extends JFrame {
     private boolean RMDragged = false;
     int cellSize;
     public Frame() {
-        super("Game of life");
+        super("WaterSim");
         setLayout(new BorderLayout());
         cellSize = 4;
-        start = new ImageIcon("./img/start.png");
-        pause = new ImageIcon("./img/pause.png");
+        start = new ImageIcon(getClass().getResource("/start.png"));
+        pause = new ImageIcon(getClass().getResource("/pause.png"));
         startPauseButton = new JButton(start);
         clearScreenButton = new JButton("Clear Screen");
-        modeButton = new JButton("Change mode to GROUND");
+        returnToStandConstButton = new JButton("Undo constant changes");
         startPauseButton.setBorderPainted(false);
 
         speedSlider = new JSlider(1, 1000);
@@ -97,7 +92,7 @@ public class Frame extends JFrame {
         toolBar.add(brushSizeSlider);
         toolBar.add(new JSeparator(SwingConstants.VERTICAL));
         toolBar.add(clearScreenButton);
-        toolBar.add(modeButton);
+        toolBar.add(returnToStandConstButton);
         setJMenuBar(menu);
 
         toolBar.setFloatable(false);
@@ -110,12 +105,16 @@ public class Frame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1050, 900);
         setResizable(false);
-
+        this.setFocusable(true);
+        this.requestFocusInWindow();
 
         maxMassMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String input = JOptionPane.showInputDialog("Set Standard Mass");
+                String input = JOptionPane.showInputDialog("Set Standard Mass\nCurrent value: " + panel.model.getMaxMass());
+                if(input.equals("")||input == null) {
+                    return;
+                }
                 float newVal = 0;
                 try {
                     newVal = parseFloat(input);
@@ -132,7 +131,10 @@ public class Frame extends JFrame {
         maxCompressMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String input = JOptionPane.showInputDialog("Set Compress Rate");
+                String input = JOptionPane.showInputDialog("Set Compress Rate\nCurrent value: " + panel.model.getMaxCompress());
+                if(input.equals("")||input == null) {
+                    return;
+                }
                 float newVal = 0;
                 try {
                     newVal = parseFloat(input);
@@ -149,7 +151,10 @@ public class Frame extends JFrame {
         minMassMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String input = JOptionPane.showInputDialog("Set Min Showable Mass");
+                String input = JOptionPane.showInputDialog("Set Min Showable Mass\nCurrent value: " + panel.model.getMinMass());
+                if(input.equals("")||input == null) {
+                    return;
+                }
                 float newVal = 0;
                 try {
                     newVal = parseFloat(input);
@@ -166,7 +171,10 @@ public class Frame extends JFrame {
         minFlowMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String input = JOptionPane.showInputDialog("Set Min Flow");
+                String input = JOptionPane.showInputDialog("Set Min Flow\nCurrent value: " + panel.model.getMinFlow());
+                if(input.equals("")||input == null) {
+                    return;
+                }
                 float newVal = 0;
                 try {
                     newVal = parseFloat(input);
@@ -183,7 +191,10 @@ public class Frame extends JFrame {
         maxSpeedMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String input = JOptionPane.showInputDialog("Set Max Speed");
+                String input = JOptionPane.showInputDialog("Set Max Speed\nCurrent value: " + panel.model.getMaxSpeed());
+                if(input.equals("")||input == null) {
+                    return;
+                }
                 float newVal = 0;
                 try {
                     newVal = parseFloat(input);
@@ -200,7 +211,10 @@ public class Frame extends JFrame {
         flowMultMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String input = JOptionPane.showInputDialog("Set flow smoothness");
+                String input = JOptionPane.showInputDialog("Set flow smoothness\nCurrent value: "+ panel.model.getFlowMult());
+                if(input.equals("")||input == null) {
+                    return;
+                }
                 float newVal = 0;
                 try {
                     newVal = parseFloat(input);
@@ -238,24 +252,17 @@ public class Frame extends JFrame {
             }
         });
 
-        modeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if(mode == Mode.WATER) {
-                    mode = Mode.GROUND;
-                    modeButton.setText("Change mode to WATER");
-                }
-                else {
-                    mode = Mode.WATER;
-                    modeButton.setText("Change mode to GROUND");
-                }
-            }
-        });
-
         clearScreenButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                panel.model = new Model();
+                panel.clearModel();
+            }
+        });
+
+        returnToStandConstButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                panel.model.setConstStand();
             }
         });
 
@@ -296,7 +303,12 @@ public class Frame extends JFrame {
                     int brushSize = panel.getBrushSize()/2;
                     for (int i = (e.getY()-brushSize)/cellSize; i < (e.getY()+brushSize)/cellSize; i++) {
                         for (int j = (e.getX()-brushSize)/cellSize; j < (e.getX()+brushSize)/cellSize; j++) {
-                            panel.setCell(1+mode.ordinal(), i, j);
+                            if(e.isAltDown()) {
+                                panel.setCell(1, i, j);
+                            }
+                            else {
+                                panel.setCell(2, i, j);
+                            }
                         }
                     }
                     panel.repaint();
@@ -336,7 +348,12 @@ public class Frame extends JFrame {
                     int brushSize = panel.getBrushSize()/2;
                     for (int i = (e.getY()-brushSize)/cellSize; i < (e.getY()+brushSize)/cellSize; i++) {
                         for (int j = (e.getX()-brushSize)/cellSize; j < (e.getX()+brushSize)/cellSize; j++) {
-                            panel.setCell(1+mode.ordinal(), i, j);
+                            if(e.isAltDown()) {
+                                panel.setCell(1, i, j);
+                            }
+                            else {
+                                panel.setCell(2, i, j);
+                            }
                         }
                     }
 

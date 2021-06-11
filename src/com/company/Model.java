@@ -43,6 +43,7 @@ public class Model {
                 newMass[i][j] = 0;
             }
         }
+
 //        MAKING "HARD" BORDER
 //        for (int j = 0; j < height; j++) {
 //            table[width-1][j] = GROUND;
@@ -52,7 +53,31 @@ public class Model {
 //            table[i][0] = GROUND;
 //        }
     }
+    public void clearTable() {
+        table = new int[width][height];
+        mass = new float[width][height];
+        newMass = new float[width][height];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                table[i][j] = AIR;
+                mass[i][j] = 0;
+                newMass[i][j] = 0;
+            }
+        }
+    }
 
+    public void setConstStand() {
+        maxMass = 1f;//The normal, un-pressurized mass of a full water cell
+        maxCompress = 0.25f;//How much excess water a cell can store, compared to the cell above it
+        minMass = 0.0001f;//Ignore cells that are almost dry
+        minFlow = 0.005f;
+        maxSpeed = 4f;
+        flowMult = 1f;
+    }
+
+    public float getMaxMass() {
+        return maxMass;
+    }
     public void setMaxMass(float maxMass) throws IllegalArgumentException {
         if(maxMass <= 0) {
             throw new IllegalArgumentException("Mass can't be <0");
@@ -60,38 +85,57 @@ public class Model {
         this.maxMass = maxMass;
     }
 
+    public float getMaxCompress() {
+        return maxCompress;
+    }
+
     public void setMaxCompress(float maxCompress) {
         if(maxCompress <= 0) {
-            throw new IllegalArgumentException("Compress can't be <0");
+            throw new IllegalArgumentException("Compress can't be <=0");
         }
         this.maxCompress = maxCompress;
     }
 
+    public float getMinMass() {
+        return minMass;
+    }
+
     public void setMinMass(float minMass) {
         if(minMass <= 0) {
-            throw new IllegalArgumentException("Minimal mass can't be <0");
+            throw new IllegalArgumentException("Minimal mass can't be <=0");
         }
         this.minMass = minMass;
     }
 
+    public float getMinFlow() {
+        return minFlow;
+    }
+
     public void setMinFlow(float minFlow) {
         if(minFlow <= 0) {
-            throw new IllegalArgumentException("Minimal flow can't be <0");
+            throw new IllegalArgumentException("Minimal flow can't be <=0");
         }
         this.minFlow = minFlow;
     }
 
+    public float getMaxSpeed() {
+        return maxSpeed;
+    }
+
     public void setMaxSpeed(float maxSpeed) {
         if(maxSpeed <= 0) {
-            throw new IllegalArgumentException("Max speed can't be <0");
+            throw new IllegalArgumentException("Max speed can't be <=0");
         }
         this.maxSpeed = maxSpeed;
     }
 
+    public float getFlowMult() {
+        return flowMult;
+    }
+
     public void setFlowMult(float flowMult) {
-        if(flowMult <= 0) {
-            throw new IllegalArgumentException("Flow smoothness speed can't be <0");
-        }
+        if(flowMult <= 0) throw new IllegalArgumentException("Flow smoothness speed can't be <=0");
+        else if(flowMult > 1) throw new IllegalArgumentException("Flow smoothness speed can't be >1");
         this.flowMult = flowMult;
     }
 
